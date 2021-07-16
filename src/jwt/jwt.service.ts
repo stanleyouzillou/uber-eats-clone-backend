@@ -12,4 +12,11 @@ export class JwtService {
   sign(payload: Record<'id', string | number>): string {
     return jwt.sign(payload, this.options.privateKey);
   }
+  verify(token: string) {
+    try {
+      return jwt.verify(token, this.options.privateKey);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

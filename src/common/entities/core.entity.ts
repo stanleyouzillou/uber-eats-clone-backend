@@ -1,4 +1,4 @@
-import { Field, ObjectType, Int, ID } from '@nestjs/graphql';
+import { Field, ObjectType, Int } from '@nestjs/graphql';
 import {
   CreateDateColumn,
   Entity,

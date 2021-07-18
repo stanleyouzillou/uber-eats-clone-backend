@@ -1,3 +1,4 @@
+import { EditProfileInput } from './dto/edit-user-profile';
 import { ConfigService } from '@nestjs/config';
 import { LoginUserInput } from './dto/login-user.dto';
 import { CreateUserInput } from './dto/create-user.dto';
@@ -5,7 +6,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { UpdateUserInput } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 
@@ -47,8 +47,24 @@ export class UsersService {
     return await this.users.findOne({ id });
   }
 
-  update(id: number, updateUserInput: UpdateUserInput) {
-    return `This action updates a #${id} user`;
+  async update(
+    id: number,
+    editProfileInput: EditProfileInput,
+  ): Promise<[boolean, string]> {
+    const user = await this.users.findOne({ id });
+    try {
+      if (user) {
+        await this.users.update({ id }, editProfileInput);
+        return [true, null];
+      } else {
+        throw new Error();
+      }
+    } catch (error) {
+      return [
+        false,
+        `Account with email: ${editProfileInput.email} doesn't exist`,
+      ];
+    }
   }
 
   remove(id: number) {

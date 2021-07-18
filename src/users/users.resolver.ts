@@ -3,8 +3,12 @@ import { UsersService } from './users.service';
 
 import { User } from './entities/user.entity';
 import { CreateUserInput, CreateUserOutput } from './dto/create-user.dto';
-import { UpdateUserInput } from './dto/update-user.dto';
+import { EditProfileOutput, EditProfileInput } from './dto/edit-user-profile';
 import { LoginUserInput, LoginUserOutput } from './dto/login-user.dto';
+import { UseGuards } from '@nestjs/common';
+import { AuthGard } from 'src/auth/auth.guard';
+import { AuthUser } from 'src/auth/auth-user.decorator';
+import { UserProfileInput, UserProfileOutput } from './dto/user-profile.dto';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -40,10 +44,10 @@ export class UsersResolver {
     return this.usersService.findOne(id);
   }
 
-  @Mutation(() => User)
-  updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
-    return this.usersService.update(updateUserInput.id, updateUserInput);
-  }
+  // @Mutation(() => User)
+  // updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
+  //   return this.usersService.update(updateUserInput.id, updateUserInput);
+  // }
 
   @Mutation(() => User)
   removeUser(@Args('id', { type: () => Int }) id: number) {
@@ -70,7 +74,53 @@ export class UsersResolver {
   }
 
   @Query((returns) => User)
-  me(@Context() context) {
-    console.log(context);
+  @UseGuards(AuthGard)
+  me(@AuthUser() user: User) {
+    return user;
+  }
+
+  @Query((returns) => UserProfileOutput)
+  @UseGuards(AuthGard)
+  async userProfile(
+    @Args() userProfileInput: UserProfileInput,
+  ): Promise<UserProfileOutput> {
+    try {
+      const user = await this.usersService.findOne(userProfileInput.userId);
+      if (!user) {
+        throw new Error();
+      }
+      return {
+        ok: Boolean(user),
+        user,
+      };
+    } catch (e) {
+      console.log(e);
+      return {
+        error: 'User not found',
+        ok: false,
+      };
+    }
+  }
+
+  @Mutation((returns) => EditProfileOutput)
+  @UseGuards(AuthGard)
+  async editProfile(
+    @Args() editProfileInput: EditProfileInput,
+  ): Promise<EditProfileOutput> {
+    const [ok, error] = await this.usersService.update(
+      editProfileInput.id,
+      editProfileInput,
+    );
+    try {
+      return {
+        ok,
+        error,
+      };
+    } catch (error) {
+      return {
+        ok,
+        error,
+      };
+    }
   }
 }

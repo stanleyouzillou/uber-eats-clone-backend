@@ -27,36 +27,42 @@ type CreateUserOutput {
   ok: Boolean!
 }
 
+type EditProfileOutput {
+  error: String
+  ok: Boolean!
+  user: User
+}
+
 type LoginUserOutput {
   error: String
   ok: Boolean!
   token: String
 }
 
+type UserProfileOutput {
+  error: String
+  ok: Boolean!
+  user: User
+}
+
 type Query {
   users: [User!]!
   user(id: Int!): User!
   me: User!
+  userProfile(userId: Int!): UserProfileOutput!
 }
 
 type Mutation {
   createUser(input: CreateUserInput!): CreateUserOutput!
-  updateUser(updateUserInput: UpdateUserInput!): User!
   removeUser(id: Int!): User!
   login(input: LoginUserInput!): LoginUserOutput!
+  editProfile(id: Int!): EditProfileOutput!
 }
 
 input CreateUserInput {
   email: String!
   password: String!
   role: UserRole!
-}
-
-input UpdateUserInput {
-  email: String
-  password: String
-  role: UserRole
-  id: Int!
 }
 
 input LoginUserInput {

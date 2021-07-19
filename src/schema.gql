@@ -9,6 +9,7 @@ type User {
   email: String!
   password: String!
   role: UserRole!
+  verified: Boolean!
 }
 
 """
@@ -57,6 +58,7 @@ type Mutation {
   removeUser(id: Int!): User!
   login(input: LoginUserInput!): LoginUserOutput!
   editProfile(input: EditProfileInput!): EditProfileOutput!
+  verifyEmail(input: VerifyEmailInput!): Boolean!
 }
 
 input CreateUserInput {
@@ -73,4 +75,8 @@ input LoginUserInput {
 input EditProfileInput {
   email: String
   password: String
+}
+
+input VerifyEmailInput {
+  code: String!
 }

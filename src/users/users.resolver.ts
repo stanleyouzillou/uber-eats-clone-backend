@@ -9,6 +9,8 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGard } from 'src/auth/auth.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dto/user-profile.dto';
+import { VerifyEmailOutput, VerifyEmailInput } from './dto/verify-email.dto';
+import { boolean } from 'joi';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -124,5 +126,10 @@ export class UsersResolver {
         error,
       };
     }
+  }
+
+  @Mutation((returns) => Boolean)
+  async verifyEmail(@Args('input') { code }: VerifyEmailInput) {
+    return await this.usersService.verifyEmail({ code });
   }
 }

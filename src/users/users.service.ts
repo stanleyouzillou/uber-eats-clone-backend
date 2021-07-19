@@ -47,23 +47,22 @@ export class UsersService {
     return await this.users.findOne({ id });
   }
 
-  async update(
-    id: number,
-    editProfileInput: EditProfileInput,
-  ): Promise<[boolean, string]> {
-    const user = await this.users.findOne({ id });
+  async editProfile(
+    userId: number,
+    { email, password }: EditProfileInput,
+  ): Promise<[User, boolean, string]> {
+    const user = await this.users.findOne({ id: userId });
     try {
-      if (user) {
-        await this.users.update({ id }, editProfileInput);
-        return [true, null];
-      } else {
-        throw new Error();
+      if (email) {
+        user.email = email;
       }
+      if (password) {
+        user.password = password;
+      }
+      await this.users.save(user);
+      return [user, true, null];
     } catch (error) {
-      return [
-        false,
-        `Account with email: ${editProfileInput.email} doesn't exist`,
-      ];
+      return [null, false, error];
     }
   }
 

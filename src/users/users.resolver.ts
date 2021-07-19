@@ -102,17 +102,19 @@ export class UsersResolver {
     }
   }
 
-  @Mutation((returns) => EditProfileOutput)
   @UseGuards(AuthGard)
+  @Mutation((returns) => EditProfileOutput)
   async editProfile(
-    @Args() editProfileInput: EditProfileInput,
+    @AuthUser() authUser: User,
+    @Args('input') editProfileInput: EditProfileInput,
   ): Promise<EditProfileOutput> {
-    const [ok, error] = await this.usersService.update(
-      editProfileInput.id,
+    const [user, ok, error] = await this.usersService.editProfile(
+      authUser.id,
       editProfileInput,
     );
     try {
       return {
+        user,
         ok,
         error,
       };

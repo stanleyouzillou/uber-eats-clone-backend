@@ -1,3 +1,4 @@
+import { Verification } from './users/entities/verification.entity';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 // import { Restaurant } from './restaurants/entities/restaurant.entity';
 // import { RestaurantsModule } from './restaurants/restaurants.module';
@@ -46,7 +47,7 @@ import { JwtModule } from './jwt/jwt.module';
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: false,
-      entities: [User],
+      entities: [User, Verification],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),

@@ -56,7 +56,7 @@ type Mutation {
   createUser(input: CreateUserInput!): CreateUserOutput!
   removeUser(id: Int!): User!
   login(input: LoginUserInput!): LoginUserOutput!
-  editProfile(id: Int!): EditProfileOutput!
+  editProfile(input: EditProfileInput!): EditProfileOutput!
 }
 
 input CreateUserInput {
@@ -68,4 +68,9 @@ input CreateUserInput {
 input LoginUserInput {
   email: String!
   password: String!
+}
+
+input EditProfileInput {
+  email: String
+  password: String
 }

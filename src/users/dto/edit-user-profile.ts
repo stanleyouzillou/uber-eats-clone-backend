@@ -3,12 +3,12 @@ import {
   Field,
   PartialType,
   ObjectType,
-  ArgsType,
   PickType,
+  InputType,
 } from '@nestjs/graphql';
 import { User } from '../entities/user.entity';
 
-@ArgsType()
+@InputType()
 export class EditProfileInput extends PartialType(
   PickType(User, ['email', 'password']),
 ) {}

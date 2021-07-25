@@ -1,5 +1,6 @@
+import { boolean } from 'joi';
 import { Verification } from './entities/verification.entity';
-import { EditProfileInput } from './dto/edit-user-profile';
+import { EditProfileInput, EditProfileOutput } from './dto/edit-user-profile';
 import { ConfigService } from '@nestjs/config';
 import { LoginUserInput } from './dto/login-user.dto';
 import { CreateUserInput } from './dto/create-user.dto';
@@ -10,6 +11,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 import { VerifyEmailInput, VerifyEmailOutput } from './dto/verify-email.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +21,7 @@ export class UsersService {
     private readonly verifications: Repository<Verification>,
     private readonly config: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
   async createAccount({
     email,
@@ -35,7 +38,10 @@ export class UsersService {
       } else {
         const createUser = this.users.create({ email: email, password, role });
         const user = await this.users.save(createUser);
-        await this.verifications.save(this.verifications.create({ user }));
+        const verification = await this.verifications.save(
+          this.verifications.create({ user }),
+        );
+        this.mailService.sendVerificationEmail(user.email, verification.code);
         return [true];
       }
     } catch (error) {
@@ -54,21 +60,24 @@ export class UsersService {
   async editProfile(
     userId: number,
     { email, password }: EditProfileInput,
-  ): Promise<[User, boolean, string]> {
+  ): Promise<EditProfileOutput> {
     const user = await this.users.findOne({ id: userId });
     try {
       if (email) {
         user.email = email;
         user.verified = false;
-        await this.verifications.save(this.verifications.create({ user }));
+        const verification = await this.verifications.save(
+          this.verifications.create({ user }),
+        );
+        this.mailService.sendVerificationEmail(user.email, verification.code);
       }
       if (password) {
         user.password = password;
       }
       await this.users.save(user);
-      return [user, true, null];
+      return { user, ok: true, error: null };
     } catch (error) {
-      return [null, false, error];
+      return { user: null, ok: false, error };
     }
   }
 
@@ -80,7 +89,10 @@ export class UsersService {
     email,
     password,
   }: LoginUserInput): Promise<[boolean, string, string?]> {
-    const user = await this.users.findOne({ email });
+    const user = await this.users.findOne(
+      { email },
+      { select: ['id', 'password'] },
+    );
     try {
       if (user) {
         const validPassword = await user.checkPassword(password);
@@ -101,16 +113,22 @@ export class UsersService {
     }
   }
 
-  async verifyEmail({ code }: VerifyEmailInput): Promise<boolean> {
+  async verifyEmail({ code }: VerifyEmailInput): Promise<VerifyEmailOutput> {
     const verification = await this.verifications.findOne(
       { code },
       { relations: ['user'] },
     );
-    if (verification) {
-      verification.user.verified = true;
-      this.users.save(verification.user);
-      return true;
+    try {
+      if (verification) {
+        console.log(verification);
+        verification.user.verified = true;
+        await this.users.save(verification.user);
+        await this.verifications.delete(verification.id);
+        return { ok: true, error: null };
+      }
+      throw new Error();
+    } catch (error) {
+      return { ok: false, error };
     }
-    return false;
   }
 }

@@ -46,6 +46,11 @@ type UserProfileOutput {
   user: User
 }
 
+type VerifyEmailOutput {
+  error: String
+  ok: Boolean!
+}
+
 type Query {
   users: [User!]!
   user(id: Int!): User!
@@ -58,7 +63,7 @@ type Mutation {
   removeUser(id: Int!): User!
   login(input: LoginUserInput!): LoginUserOutput!
   editProfile(input: EditProfileInput!): EditProfileOutput!
-  verifyEmail(input: VerifyEmailInput!): Boolean!
+  verifyEmail(input: VerifyEmailInput!): VerifyEmailOutput!
 }
 
 input CreateUserInput {

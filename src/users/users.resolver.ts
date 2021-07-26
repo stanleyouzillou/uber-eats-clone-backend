@@ -20,20 +20,7 @@ export class UsersResolver {
   async createUser(
     @Args('input') createUserInput: CreateUserInput,
   ): Promise<CreateUserOutput> {
-    try {
-      const [ok, error] = await this.usersService.createAccount(
-        createUserInput,
-      );
-      return {
-        ok,
-        error,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
+    return await this.usersService.createAccount(createUserInput);
   }
 
   @Query(() => [User], { name: 'users' })
@@ -42,8 +29,8 @@ export class UsersResolver {
   }
 
   @Query(() => User, { name: 'user' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.usersService.findOne(id);
+  async findOne(@Args('id', { type: () => Int }) id: number) {
+    return await this.usersService.findOne(id);
   }
 
   // @Mutation(() => User)
@@ -60,19 +47,7 @@ export class UsersResolver {
   async login(
     @Args('input') loginUserInput: LoginUserInput,
   ): Promise<LoginUserOutput> {
-    const [ok, error, token] = await this.usersService.login(loginUserInput);
-    try {
-      return {
-        ok,
-        error,
-        token,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
-    }
+    return await this.usersService.login(loginUserInput);
   }
 
   @Query((returns) => User)
@@ -86,37 +61,22 @@ export class UsersResolver {
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
-    try {
-      const user = await this.usersService.findOne(userProfileInput.userId);
-      if (!user) {
-        throw new Error();
-      }
-      return {
-        ok: Boolean(user),
-        user,
-      };
-    } catch (e) {
-      console.log(e);
-      return {
-        error: 'User not found',
-        ok: false,
-      };
-    }
+    return await this.usersService.userProfile(userProfileInput);
   }
 
   @UseGuards(AuthGard)
   @Mutation((returns) => EditProfileOutput)
-  editProfile(
+  async editProfile(
     @AuthUser() authUser: User,
     @Args('input') editProfileInput: EditProfileInput,
   ): Promise<EditProfileOutput> {
-    return this.usersService.editProfile(authUser.id, editProfileInput);
+    return await this.usersService.editProfile(authUser.id, editProfileInput);
   }
 
   @Mutation((returns) => VerifyEmailOutput)
-  verifyEmail(
+  async verifyEmail(
     @Args('input') { code }: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {
-    return this.usersService.verifyEmail({ code });
+    return await this.usersService.verifyEmail({ code });
   }
 }

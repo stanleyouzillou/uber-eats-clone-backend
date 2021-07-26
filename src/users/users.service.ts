@@ -1,9 +1,8 @@
-import { boolean } from 'joi';
 import { Verification } from './entities/verification.entity';
 import { EditProfileInput, EditProfileOutput } from './dto/edit-user-profile';
-import { ConfigService } from '@nestjs/config';
-import { LoginUserInput } from './dto/login-user.dto';
-import { CreateUserInput } from './dto/create-user.dto';
+
+import { LoginUserInput, LoginUserOutput } from './dto/login-user.dto';
+import { CreateUserInput, CreateUserOutput } from './dto/create-user.dto';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,6 +11,7 @@ import { User } from './entities/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 import { VerifyEmailInput, VerifyEmailOutput } from './dto/verify-email.dto';
 import { MailService } from 'src/mail/mail.service';
+import { UserProfileInput, UserProfileOutput } from './dto/user-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -19,7 +19,7 @@ export class UsersService {
     @InjectRepository(User) private readonly users: Repository<User>,
     @InjectRepository(Verification)
     private readonly verifications: Repository<Verification>,
-    private readonly config: ConfigService,
+
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
   ) {}
@@ -27,14 +27,14 @@ export class UsersService {
     email,
     password,
     role,
-  }: CreateUserInput): Promise<[boolean, string?]> {
+  }: CreateUserInput): Promise<CreateUserOutput> {
     const userExists = await this.users.findOne({ email });
     try {
       if (userExists) {
-        return [
-          false,
-          `Your account with the following email address ${email} already exists`,
-        ];
+        return {
+          ok: false,
+          error: `Your account with the following email address ${email} already exists`,
+        };
       } else {
         const createUser = this.users.create({ email: email, password, role });
         const user = await this.users.save(createUser);
@@ -42,10 +42,13 @@ export class UsersService {
           this.verifications.create({ user }),
         );
         this.mailService.sendVerificationEmail(user.email, verification.code);
-        return [true];
+        return {
+          ok: true,
+          error: null,
+        };
       }
     } catch (error) {
-      return [true, `Account with email: ${email} already exists`];
+      return { ok: false, error };
     }
   }
 
@@ -85,10 +88,27 @@ export class UsersService {
     return `This action removes a #${id} user`;
   }
 
-  async login({
-    email,
-    password,
-  }: LoginUserInput): Promise<[boolean, string, string?]> {
+  async userProfile(
+    userProfileInput: UserProfileInput,
+  ): Promise<UserProfileOutput> {
+    try {
+      const user = await this.users.findOne(userProfileInput.userId);
+      if (!user) {
+        throw new Error();
+      }
+      return {
+        ok: Boolean(user),
+        user,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'User not found',
+      };
+    }
+  }
+
+  async login({ email, password }: LoginUserInput): Promise<LoginUserOutput> {
     const user = await this.users.findOne(
       { email },
       { select: ['id', 'password'] },
@@ -98,18 +118,18 @@ export class UsersService {
         const validPassword = await user.checkPassword(password);
         if (validPassword) {
           const token = this.jwtService.sign({ id: user.id });
-          return [true, null, token];
+          return { ok: true, error: null, token };
         } else {
-          return [
-            false,
-            `Hey User with email: ${email}, your password is not correct`,
-          ];
+          return {
+            ok: false,
+            error: `Hey User with email: ${email}, your password is not correct`,
+          };
         }
       } else {
-        return [false, `User with email: ${email} not found`];
+        return { ok: false, error: `User with email: ${email} not found` };
       }
     } catch (error) {
-      return [false, error];
+      return { ok: false, error };
     }
   }
 

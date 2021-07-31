@@ -10,6 +10,7 @@ type User {
   password: String!
   role: UserRole!
   verified: Boolean!
+  restaurants: [Restaurant!]!
 }
 
 """
@@ -21,6 +22,26 @@ enum UserRole {
   Client
   Owner
   Delivery
+}
+
+type Restaurant {
+  id: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  bgImage: String!
+  address: String!
+  category: Category
+  owner: User!
+}
+
+type Category {
+  id: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  categoryImg: String!
+  restaurants: [Restaurant!]!
 }
 
 type CreateUserOutput {
@@ -56,6 +77,7 @@ type Query {
   user(id: Int!): User!
   me: User!
   userProfile(userId: Int!): UserProfileOutput!
+  restaurants: [Restaurant!]!
 }
 
 type Mutation {
@@ -64,6 +86,8 @@ type Mutation {
   login(input: LoginUserInput!): LoginUserOutput!
   editProfile(input: EditProfileInput!): EditProfileOutput!
   verifyEmail(input: VerifyEmailInput!): VerifyEmailOutput!
+  createRestaurant(input: CreateRestaurantDto!): Boolean!
+  updateRestaurant(payload: UpdateRestaurantDto!): Boolean!
 }
 
 input CreateUserInput {
@@ -84,4 +108,51 @@ input EditProfileInput {
 
 input VerifyEmailInput {
   code: String!
+}
+
+input CreateRestaurantDto {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  name: String!
+  bgImage: String!
+  address: String!
+  category: CategoryInputType
+  owner: UserInputType!
+}
+
+input CategoryInputType {
+  name: String!
+  categoryImg: String!
+  restaurants: [RestaurantInputType!]!
+}
+
+input RestaurantInputType {
+  name: String!
+  bgImage: String!
+  address: String!
+  category: CategoryInputType
+  owner: UserInputType!
+}
+
+input UserInputType {
+  email: String!
+  password: String!
+  role: UserRole!
+  verified: Boolean!
+  restaurants: [RestaurantInputType!]!
+}
+
+input UpdateRestaurantDto {
+  id: Int!
+  data: UpdateRestaurantInputType!
+}
+
+input UpdateRestaurantInputType {
+  createdAt: DateTime
+  updatedAt: DateTime
+  name: String
+  bgImage: String
+  address: String
+  category: CategoryInputType
+  owner: UserInputType
 }

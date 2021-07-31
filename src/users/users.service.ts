@@ -28,8 +28,8 @@ export class UsersService {
     password,
     role,
   }: CreateUserInput): Promise<CreateUserOutput> {
-    const userExists = await this.users.findOne({ email });
     try {
+      const userExists = await this.users.findOne({ email });
       if (userExists) {
         return {
           ok: false,
@@ -48,7 +48,7 @@ export class UsersService {
         };
       }
     } catch (error) {
-      return { ok: false, error };
+      return { ok: false, error: 'account creation failed' };
     }
   }
 

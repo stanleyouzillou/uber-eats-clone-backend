@@ -1,7 +1,7 @@
 import { Category } from './category.entity';
 import { CoreEntity } from './../../common/entities/core.entity';
-import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
-import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { IsString, Length } from 'class-validator';
 import { Column, Entity, ManyToOne } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 
@@ -36,7 +36,7 @@ export class Restaurant extends CoreEntity {
   //One restaurant may have only one intance of User
   @Field((type) => User)
   @ManyToOne((type) => User, (user) => user.restaurants, {
-    nullable: true,
+    onDelete: 'CASCADE',
   })
   owner: User;
 }

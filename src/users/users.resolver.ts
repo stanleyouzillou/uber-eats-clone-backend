@@ -10,7 +10,6 @@ import { AuthGard } from 'src/auth/auth.guard';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { UserProfileInput, UserProfileOutput } from './dto/user-profile.dto';
 import { VerifyEmailOutput, VerifyEmailInput } from './dto/verify-email.dto';
-import { boolean } from 'joi';
 
 @Resolver(() => User)
 export class UsersResolver {

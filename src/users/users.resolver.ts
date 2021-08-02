@@ -1,3 +1,4 @@
+import { Role } from './../auth/role.decorator';
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 
@@ -50,20 +51,20 @@ export class UsersResolver {
   }
 
   @Query((returns) => User)
-  @UseGuards(AuthGard)
+  @Role(['Any'])
   me(@AuthUser() user: User) {
     return user;
   }
 
   @Query((returns) => UserProfileOutput)
-  @UseGuards(AuthGard)
+  @Role(['Any'])
   async userProfile(
     @Args() userProfileInput: UserProfileInput,
   ): Promise<UserProfileOutput> {
     return await this.usersService.userProfile(userProfileInput);
   }
 
-  @UseGuards(AuthGard)
+  @Role(['Any'])
   @Mutation((returns) => EditProfileOutput)
   async editProfile(
     @AuthUser() authUser: User,
